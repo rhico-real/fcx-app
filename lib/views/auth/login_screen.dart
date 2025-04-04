@@ -1,5 +1,6 @@
 import 'package:fcx_app/remote_db/auth_repository.dart';
 import 'package:fcx_app/views/auth/register_screen.dart';
+import 'package:fcx_app/views/dashboard/profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -59,42 +60,41 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 20),
               _buildLoginButton(),
               SizedBox(height: 50),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'No account yet?',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  SizedBox(width: 5),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RegisterScreen(),
-                        ),
-                      );
-                    },
-                    child: Material(
-                      color: Colors.transparent,
-                      child: Text(
-                        'Register Here',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Colors.blue,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              _buildRegister(context),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Row _buildRegister(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('No account yet?', style: TextStyle(color: Colors.white)),
+        SizedBox(width: 5),
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RegisterScreen()),
+            );
+          },
+          child: Material(
+            color: Colors.transparent,
+            child: Text(
+              'Register Here',
+              style: TextStyle(
+                color: Colors.blue,
+                decoration: TextDecoration.underline,
+                decorationColor: Colors.blue,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -117,9 +117,10 @@ class _LoginScreenState extends State<LoginScreen> {
             var response = await AuthRepository().httpLogin(payload);
 
             if (response.statusCode == 200) {
-              ScaffoldMessenger.of(
+              Navigator.pushReplacement(
                 context,
-              ).showSnackBar(SnackBar(content: Text('Login successful!')));
+                MaterialPageRoute(builder: (context) => ProfileScreen()),
+              );
             } else {
               ScaffoldMessenger.of(
                 context,

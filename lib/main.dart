@@ -15,7 +15,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();
@@ -23,9 +22,9 @@ class _MyAppState extends State<MyApp> {
 
   Future<Widget> getHomeScreen() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? id = sharedPreferences.getString('id');
+    String? token = sharedPreferences.getString('token');
 
-    if(id != null){
+    if (token != null) {
       return ProfileScreen();
     }
 
@@ -43,17 +42,13 @@ class _MyAppState extends State<MyApp> {
       home: FutureBuilder(
         future: getHomeScreen(),
         builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.waiting){
-            return Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(body: Center(child: CircularProgressIndicator()));
           } else {
             return snapshot.data ?? LoginScreen();
           }
-        }
-      )
+        },
+      ),
     );
   }
 }

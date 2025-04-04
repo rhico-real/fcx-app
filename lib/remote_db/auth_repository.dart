@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:fcx_app/local_db/shared_prefs_helper.dart';
 import 'package:fcx_app/local_db/sqlite_db_helper.dart';
 import 'package:fcx_app/remote_db/remote_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthRepository {
   var loginUrl = Uri.parse('$BASEURL/api/auth/login');
@@ -24,6 +26,18 @@ class AuthRepository {
 
       if (statusCode == 200) {
         final decoded = jsonDecode(responseBody);
+
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
+
+        sharedPreferences.setString(
+          SharedPrefsHelper().id,
+          decoded['user']['id'],
+        );
+        sharedPreferences.setString(
+          SharedPrefsHelper().token,
+          decoded['token'],
+        );
 
         if (decoded['user'] != null) {
           final user = decoded['user'];
@@ -60,5 +74,20 @@ class AuthRepository {
     Logger().e(response.body);
 
     return response;
+  }
+
+  Future<bool> logout() async {
+    try {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+
+      await sharedPreferences.clear();
+      await DBHelper().clearUser();
+
+      return true;
+    } catch (e) {
+      Logger().e(e);
+      return false;
+    }
   }
 }
