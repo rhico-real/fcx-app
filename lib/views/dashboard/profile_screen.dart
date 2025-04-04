@@ -157,7 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return InkWell(
           onTap: () async {
             Map<String, dynamic> payload = {
-              'name': _emailController.text,
+              'name': _fullNameController.text,
               'email': _emailController.text,
               'accountNumber': _accountNumberController.text,
               'billingAddress': _billingAddressController.text,

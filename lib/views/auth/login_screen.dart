@@ -16,6 +16,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   ValueNotifier<bool> isLoading = ValueNotifier(false);
 
+  bool _obscureText = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,17 +46,41 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintStyle: TextStyle(color: Colors.white),
                   prefixIcon: Icon(Icons.email, color: Colors.white),
                   contentPadding: EdgeInsets.symmetric(vertical: 16.0),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.orange),
+                  ),
                 ),
               ),
               SizedBox(height: 20),
               TextField(
                 controller: _passwordController,
+                obscureText: _obscureText,
                 style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Password',
                   hintStyle: TextStyle(color: Colors.white),
-                  prefixIcon: Icon(Icons.password, color: Colors.white),
+                  prefixIcon: Icon(Icons.lock, color: Colors.white),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                  ),
                   contentPadding: EdgeInsets.symmetric(vertical: 16.0),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.orange),
+                  ),
                 ),
               ),
               SizedBox(height: 20),
