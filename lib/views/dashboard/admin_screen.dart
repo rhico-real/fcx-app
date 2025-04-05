@@ -14,6 +14,8 @@ class _HomeScreenState extends State<AdminScreen> {
   final ScrollController _scrollController = ScrollController();
   List<Map<String, dynamic>> listUsers = [];
 
+  ValueNotifier<bool> isLoading = ValueNotifier(false);
+
   @override
   void initState() {
     super.initState();
@@ -21,6 +23,8 @@ class _HomeScreenState extends State<AdminScreen> {
   }
 
   Future<void> getUsers() async {
+    isLoading.value = true;
+    listUsers.clear();
     var response = await AdminRepository().httpGetUsers();
 
     if (response != null) {
@@ -37,6 +41,8 @@ class _HomeScreenState extends State<AdminScreen> {
 
       setState(() {});
     }
+
+    isLoading.value = false;
   }
 
   @override
@@ -96,111 +102,139 @@ class _HomeScreenState extends State<AdminScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Admin Dashboard')),
-      body: Scrollbar(
-        controller: _scrollController,
-        thumbVisibility: true,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: DataTable(
-            columnSpacing: 30,
-            columns: const [
-              DataColumn(label: Text('Name')),
-              DataColumn(label: Text('Email')),
-              DataColumn(label: Text('Actions')),
-            ],
-            rows: List.generate(listUsers.length, (index) {
-              var user = listUsers[index];
-              return DataRow(
-                cells: [
-                  DataCell(
-                    SizedBox(
-                      width: 100,
-                      child: TextField(
-                        enabled: user['isEditing'],
-                        controller: TextEditingController(text: user['name']),
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          isDense: true,
-                          contentPadding: EdgeInsets.all(8),
-                        ),
-                        onChanged: (value) => listUsers[index]['name'] = value,
-                      ),
-                    ),
-                  ),
-                  DataCell(
-                    SizedBox(
-                      width: 100,
-                      child: TextField(
-                        enabled: user['isEditing'],
-                        controller: TextEditingController(text: user['email']),
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          isDense: true,
-                          contentPadding: EdgeInsets.all(8),
-                        ),
-                        onChanged: (value) => listUsers[index]['email'] = value,
-                      ),
-                    ),
-                  ),
-                  DataCell(
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            user['isEditing'] ? Icons.save : Icons.edit,
-                            color:
-                                user['isEditing'] ? Colors.green : Colors.blue,
+      body: RefreshIndicator(
+        onRefresh: getUsers,
+        child: ValueListenableBuilder(
+          valueListenable: isLoading,
+          builder: (context, val, child) {
+            if (isLoading.value) {
+              return Center(child: CircularProgressIndicator());
+            }
+            return Scrollbar(
+              controller: _scrollController,
+              thumbVisibility: true,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                physics: AlwaysScrollableScrollPhysics(),
+                scrollDirection: Axis.vertical,
+                child: DataTable(
+                  columnSpacing: 30,
+                  columns: const [
+                    DataColumn(label: Text('Name')),
+                    DataColumn(label: Text('Email')),
+                    DataColumn(label: Text('Actions')),
+                  ],
+                  rows: List.generate(listUsers.length, (index) {
+                    var user = listUsers[index];
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          SizedBox(
+                            width: 100,
+                            child: TextField(
+                              enabled: user['isEditing'],
+                              controller: TextEditingController(
+                                text: user['name'],
+                              ),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                                contentPadding: EdgeInsets.all(8),
+                              ),
+                              onChanged:
+                                  (value) => listUsers[index]['name'] = value,
+                            ),
                           ),
-                          onPressed: () async {
-                            if (user['isEditing']) {
-                              var userId = user['id'];
-
-                              Map<String, dynamic> payload = {
-                                'name': user['name'],
-                                'email': user['email'],
-                              };
-
-                              var res = await AdminRepository()
-                                  .httpUpdateProfile(
-                                    payload,
-                                    userId.toString(),
-                                  );
-
-                              if (res != null && res.statusCode == 200) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("Successfully updated!"),
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      res?.body ?? "Error updating.",
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                            setState(() {
-                              listUsers[index]['name'] = user['name'];
-
-                              listUsers[index]['isEditing'] =
-                                  !listUsers[index]['isEditing'];
-                            });
-                          },
                         ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => showDeleteDialog(index, user['id']),
+                        DataCell(
+                          SizedBox(
+                            width: 100,
+                            child: TextField(
+                              enabled: user['isEditing'],
+                              controller: TextEditingController(
+                                text: user['email'],
+                              ),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                                contentPadding: EdgeInsets.all(8),
+                              ),
+                              onChanged:
+                                  (value) => listUsers[index]['email'] = value,
+                            ),
+                          ),
+                        ),
+                        DataCell(
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  user['isEditing'] ? Icons.save : Icons.edit,
+                                  color:
+                                      user['isEditing']
+                                          ? Colors.green
+                                          : Colors.blue,
+                                ),
+                                onPressed: () async {
+                                  if (user['isEditing']) {
+                                    var userId = user['id'];
+
+                                    Map<String, dynamic> payload = {
+                                      'name': user['name'],
+                                      'email': user['email'],
+                                    };
+
+                                    var res = await AdminRepository()
+                                        .httpUpdateProfile(
+                                          payload,
+                                          userId.toString(),
+                                        );
+
+                                    if (res != null && res.statusCode == 200) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "Successfully updated!",
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            res?.body ?? "Error updating.",
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                  setState(() {
+                                    listUsers[index]['name'] = user['name'];
+
+                                    listUsers[index]['isEditing'] =
+                                        !listUsers[index]['isEditing'];
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed:
+                                    () => showDeleteDialog(index, user['id']),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                ],
-              );
-            }),
-          ),
+                    );
+                  }),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

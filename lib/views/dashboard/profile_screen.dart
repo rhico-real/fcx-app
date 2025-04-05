@@ -117,27 +117,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: ValueListenableBuilder(
           valueListenable: userData,
           builder: (context, val, child) {
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (userData.value.isNotEmpty) ...[
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(userData.value['photo']),
-                      radius: 70,
-                    ),
-                  ] else ...[
-                    CircularProgressIndicator(),
-                  ],
+            return RefreshIndicator(
+              onRefresh: getProfile,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height * 0.3,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (userData.value.isNotEmpty) ...[
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(
+                            userData.value['photo'],
+                          ),
+                          radius: 70,
+                        ),
+                      ] else ...[
+                        CircularProgressIndicator(),
+                      ],
 
-                  _buildTextfield('Full Name', _fullNameController),
-                  _buildTextfield('Email', _emailController),
-                  _buildTextfield('Account Number', _accountNumberController),
-                  _buildTextfield('Billing Address', _billingAddressController),
-                  _buildTextfield('Contact Number', _contactController),
-                  _buildUpdateProfileButton(),
-                ],
+                      _buildTextfield('Full Name', _fullNameController),
+                      _buildTextfield('Email', _emailController),
+                      _buildTextfield(
+                        'Account Number',
+                        _accountNumberController,
+                      ),
+                      _buildTextfield(
+                        'Billing Address',
+                        _billingAddressController,
+                      ),
+                      _buildTextfield('Contact Number', _contactController),
+                      _buildUpdateProfileButton(),
+                    ],
+                  ),
+                ),
               ),
             );
           },
